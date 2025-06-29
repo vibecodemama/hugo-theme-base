@@ -1,0 +1,255 @@
+<header class="site-header" role="banner">
+  <div class="header-container">
+    <!-- Site branding -->
+    <div class="site-branding">
+      {{- if .Site.Params.logo }}
+        <a href="{{ .Site.BaseURL }}" class="site-logo" aria-label="Go to homepage">
+          <img src="{{ .Site.Params.logo | relURL }}" alt="{{ .Site.Title }}" width="40" height="40">
+          {{- if not .Site.Params.hide_site_title }}
+            <span class="site-title">{{ .Site.Title }}</span>
+          {{- end }}
+        </a>
+      {{- else }}
+        <a href="{{ .Site.BaseURL }}" class="site-title-link">
+          <h1 class="site-title">{{ .Site.Title }}</h1>
+        </a>
+      {{- end }}
+
+      {{- with .Site.Params.tagline }}
+        <p class="site-tagline">{{ . }}</p>
+      {{- end }}
+    </div>
+
+    <!-- Main navigation -->
+    <nav id="navigation" class="main-navigation" role="navigation" aria-label="Main navigation">
+      <!-- Mobile menu toggle -->
+      <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="Toggle navigation menu">
+        <span class="menu-toggle-icon">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </span>
+        <span class="menu-toggle-text">Menu</span>
+      </button>
+
+      <!-- Navigation menu -->
+      <div id="primary-menu" class="menu-wrapper">
+        {{- $currentPage := . }}
+        {{- with .Site.Menus.main }}
+          <ul class="menu" role="menubar">
+            {{- range . }}
+              {{- $isActive := false }}
+              {{- if eq .URL $currentPage.RelPermalink }}
+                {{- $isActive = true }}
+              {{- else if $currentPage.IsMenuCurrent "main" . }}
+                {{- $isActive = true }}
+              {{- else if $currentPage.HasMenuCurrent "main" . }}
+                {{- $isActive = true }}
+              {{- end }}
+
+              <li class="menu-item{{- if $isActive }} current-menu-item{{- end }}" role="none">
+                <a href="{{ .URL | relURL }}"
+                   class="menu-link{{- if $isActive }} current{{- end }}"
+                   role="menuitem"
+                   {{- if $isActive }} aria-current="page"{{- end }}
+                   {{- with .Title }} title="{{ . }}"{{- end }}>
+                  {{ .Name }}
+                </a>
+
+                {{- /* Support for dropdown menus */ -}}
+                {{- if .HasChildren }}
+                  <button class="submenu-toggle" aria-expanded="false" aria-label="Toggle {{ .Name }} submenu">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M6 9L1.5 4.5L2.5 3.5L6 7L9.5 3.5L10.5 4.5L6 9Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                  <ul class="submenu" role="menu" aria-label="{{ .Name }} submenu">
+                    {{- range .Children }}
+                      {{- $isChildActive := false }}
+                      {{- if eq .URL $currentPage.RelPermalink }}
+                        {{- $isChildActive = true }}
+                      {{- else if $currentPage.IsMenuCurrent "main" . }}
+                        {{- $isChildActive = true }}
+                      {{- end }}
+
+                      <li class="submenu-item{{- if $isChildActive }} current-menu-item{{- end }}" role="none">
+                        <a href="{{ .URL | relURL }}"
+                           class="submenu-link{{- if $isChildActive }} current{{- end }}"
+                           role="menuitem"
+                           {{- if $isChildActive }} aria-current="page"{{- end }}
+                           {{- with .Title }} title="{{ . }}"{{- end }}>
+                          {{ .Name }}
+                        </a>
+                      </li>
+                    {{- end }}
+                  </ul>
+                {{- end }}
+              </li>
+            {{- end }}
+          </ul>
+        {{- else }}
+          {{- /* Default navigation if no menu is configured */ -}}
+          <ul class="menu" role="menubar">
+            <li class="menu-item{{- if .IsHome }} current-menu-item{{- end }}" role="none">
+              <a href="{{ .Site.BaseURL }}"
+                 class="menu-link{{- if .IsHome }} current{{- end }}"
+                 role="menuitem"
+                 {{- if .IsHome }} aria-current="page"{{- end }}>
+                Home
+              </a>
+            </li>
+            {{- /* Add other default pages if they exist */ -}}
+            {{- range .Site.RegularPages }}
+              {{- if in (slice "about" "contact") .Type }}
+                <li class="menu-item{{- if eq . $currentPage }} current-menu-item{{- end }}" role="none">
+                  <a href="{{ .RelPermalink }}"
+                     class="menu-link{{- if eq . $currentPage }} current{{- end }}"
+                     role="menuitem"
+                     {{- if eq . $currentPage }} aria-current="page"{{- end }}>
+                    {{ .Title }}
+                  </a>
+                </li>
+              {{- end }}
+            {{- end }}
+          </ul>
+        {{- end }}
+
+        <!-- Search toggle (if search is enabled) -->
+        {{- if .Site.Params.search.enabled }}
+          <button class="search-toggle" aria-label="Toggle search" title="Search">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="2"/>
+              <path d="M15 15L19 19" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        {{- end }}
+
+        <!-- Theme toggle button -->
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+          <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Search overlay (if search is enabled) -->
+  {{- if .Site.Params.search.enabled }}
+    <div class="search-overlay" id="search-overlay" aria-hidden="true">
+      <div class="search-container">
+        <form class="search-form" role="search" aria-label="Site search">
+          <label for="search-input" class="search-label">Search the site:</label>
+          <div class="search-input-wrapper">
+            <input type="search"
+                   id="search-input"
+                   class="search-input"
+                   placeholder="Search posts, pages..."
+                   autocomplete="off"
+                   aria-describedby="search-instructions">
+            <button type="submit" class="search-submit" aria-label="Submit search">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="2"/>
+                <path d="M15 15L19 19" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+          <p id="search-instructions" class="search-instructions">
+            Press Enter to search or Escape to close
+          </p>
+        </form>
+
+        <button class="search-close" aria-label="Close search">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+
+        <div class="search-results" id="search-results" aria-live="polite">
+          <!-- Search results will be populated here -->
+        </div>
+      </div>
+    </div>
+  {{- end }}
+</header>
+
+<!-- JavaScript for navigation functionality -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const primaryMenu = document.getElementById('primary-menu');
+
+    if (menuToggle && primaryMenu) {
+      menuToggle.addEventListener('click', function() {
+        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+        menuToggle.setAttribute('aria-expanded', !isExpanded);
+        primaryMenu.classList.toggle('active');
+        document.body.classList.toggle('menu-open');
+      });
+    }
+
+    // Submenu toggles
+    const submenuToggles = document.querySelectorAll('.submenu-toggle');
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !isExpanded);
+        const submenu = toggle.nextElementSibling;
+        if (submenu) {
+          submenu.classList.toggle('active');
+        }
+      });
+    });
+
+    // Search functionality
+    const searchToggle = document.querySelector('.search-toggle');
+    const searchOverlay = document.getElementById('search-overlay');
+    const searchClose = document.querySelector('.search-close');
+    const searchInput = document.getElementById('search-input');
+
+    if (searchToggle && searchOverlay) {
+      searchToggle.addEventListener('click', function() {
+        searchOverlay.classList.add('active');
+        searchOverlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('search-open');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      });
+    }
+
+    if (searchClose && searchOverlay) {
+      searchClose.addEventListener('click', function() {
+        searchOverlay.classList.remove('active');
+        searchOverlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('search-open');
+      });
+    }
+
+    // Close search with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && searchOverlay && searchOverlay.classList.contains('active')) {
+        searchOverlay.classList.remove('active');
+        searchOverlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('search-open');
+      }
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (primaryMenu && primaryMenu.classList.contains('active')) {
+        if (!e.target.closest('.main-navigation')) {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          primaryMenu.classList.remove('active');
+          document.body.classList.remove('menu-open');
+        }
+      }
+    });
+  });
+</script>

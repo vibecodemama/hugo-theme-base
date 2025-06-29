@@ -1,0 +1,368 @@
+{{- define "main" }}
+  {{- /* Single post template with sidebar */ -}}
+  <div class="post-layout">
+    {{- /* Main content area */ -}}
+    <article class="post h-entry" itemscope itemtype="https://schema.org/BlogPosting">
+      {{- /* Post header */ -}}
+      <header class="post-header">
+        {{- /* Breadcrumbs */ -}}
+        <nav class="breadcrumbs" aria-label="Breadcrumb navigation">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a href="{{ .Site.BaseURL }}" class="breadcrumb-link">Home</a>
+            </li>
+            {{- with .Section }}
+              <li class="breadcrumb-item">
+                <a href="{{ "/posts/" | relURL }}" class="breadcrumb-link">Posts</a>
+              </li>
+            {{- end }}
+            {{- with .Params.categories }}
+              {{- range first 1 . }}
+                <li class="breadcrumb-item">
+                  <a href="{{ "/categories/" | relURL }}{{ . | urlize }}/" class="breadcrumb-link">{{ . }}</a>
+                </li>
+              {{- end }}
+            {{- end }}
+            <li class="breadcrumb-item current" aria-current="page">
+              <span class="breadcrumb-current">{{ .Title }}</span>
+            </li>
+          </ol>
+        </nav>
+
+        {{- /* Post categories */ -}}
+        {{- with .Params.categories }}
+          <div class="post-categories">
+            {{- range . }}
+              <a href="{{ "/categories/" | relURL }}{{ . | urlize }}/"
+                 class="post-category p-category"
+                 rel="tag">{{ . }}</a>
+            {{- end }}
+          </div>
+        {{- end }}
+
+        {{- /* Post title */ -}}
+        <h1 class="post-title p-name" itemprop="headline">{{ .Title }}</h1>
+
+        {{- /* Post subtitle */ -}}
+        {{- with .Params.subtitle }}
+          <p class="post-subtitle p-summary">{{ . }}</p>
+        {{- end }}
+
+        {{- /* Post metadata */ -}}
+        <div class="post-meta">
+          {{- /* Author information */ -}}
+          <div class="post-author h-card" itemprop="author" itemscope itemtype="https://schema.org/Person">
+            {{- with .Params.author_avatar }}
+              <img src="{{ . | relURL }}"
+                   alt="{{ $.Params.author | default $.Site.Params.author }}"
+                   class="author-avatar u-photo"
+                   width="40"
+                   height="40"
+                   loading="lazy">
+            {{- end }}
+            <div class="author-info">
+              <span class="author-name p-name" itemprop="name">
+                {{- with .Params.author }}{{ . }}{{- else }}{{ .Site.Params.author }}{{- end }}
+              </span>
+              {{- with .Params.author_bio }}
+                <span class="author-bio p-note">{{ . }}</span>
+              {{- end }}
+            </div>
+          </div>
+
+          {{- /* Publication date and reading time */ -}}
+          <div class="post-date-info">
+            <time class="post-date dt-published"
+                  datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}"
+                  itemprop="datePublished">
+              {{ .Date.Format "January 2, 2006" }}
+            </time>
+
+            {{- if ne .Date .Lastmod }}
+              <time class="post-updated dt-updated"
+                    datetime="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}"
+                    itemprop="dateModified">
+                Updated {{ .Lastmod.Format "January 2, 2006" }}
+              </time>
+            {{- end }}
+
+            {{- with .ReadingTime }}
+              <span class="reading-time" aria-label="Estimated reading time">
+                {{ . }} min read
+              </span>
+            {{- end }}
+          </div>
+        </div>
+
+        {{- /* Featured image */ -}}
+        {{- with .Params.featured_image }}
+          <div class="post-featured-image">
+            {{- $image := resources.Get . }}
+            {{- if $image }}
+              {{- $large := $image.Resize "1200x630 webp q85" }}
+              {{- $medium := $image.Resize "800x420 webp q85" }}
+              {{- $fallback := $image.Resize "1200x630 jpg q85" }}
+              <picture>
+                <source media="(max-width: 768px)" srcset="{{ $medium.RelPermalink }}" type="image/webp">
+                <source media="(min-width: 769px)" srcset="{{ $large.RelPermalink }}" type="image/webp">
+                <img src="{{ $fallback.RelPermalink }}"
+                     alt="{{ $.Params.featured_image_alt | default $.Title }}"
+                     class="featured-img u-photo"
+                     width="1200"
+                     height="630"
+                     loading="eager"
+                     decoding="async"
+                     itemprop="image">
+              </picture>
+            {{- else }}
+              <img src="{{ . | relURL }}"
+                   alt="{{ $.Params.featured_image_alt | default $.Title }}"
+                   class="featured-img u-photo"
+                   width="1200"
+                   height="630"
+                   loading="eager"
+                   decoding="async"
+                   itemprop="image">
+            {{- end }}
+
+            {{- with $.Params.featured_image_caption }}
+              <figcaption class="featured-image-caption">{{ . | markdownify }}</figcaption>
+            {{- end }}
+          </div>
+        {{- end }}
+      </header>
+
+      {{- /* Post content */ -}}
+      <div class="post-content e-content" itemprop="articleBody">
+        {{ .Content }}
+      </div>
+
+      {{- /* Post footer */ -}}
+      <footer class="post-footer">
+        {{- /* Tags */ -}}
+        {{- with .Params.tags }}
+          <div class="post-tags">
+            <h3 class="post-tags-title">Tags</h3>
+            <ul class="tag-list">
+              {{- range . }}
+                <li class="tag-item">
+                  <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/"
+                     class="tag-link p-category"
+                     rel="tag">{{ . }}</a>
+                </li>
+              {{- end }}
+            </ul>
+          </div>
+        {{- end }}
+
+        {{- /* Social sharing */ -}}
+        {{- if .Site.Params.social_sharing.enabled }}
+          <div class="social-sharing">
+            <h3 class="social-sharing-title">Share this post</h3>
+            <ul class="social-sharing-list">
+              <li class="social-sharing-item">
+                <a href="https://twitter.com/intent/tweet?url={{ .Permalink | urlquery }}&text={{ .Title | urlquery }}"
+                   class="social-sharing-link twitter"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="Share on Twitter">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                  </svg>
+                  Twitter
+                </a>
+              </li>
+              <li class="social-sharing-item">
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ .Permalink | urlquery }}"
+                   class="social-sharing-link facebook"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="Share on Facebook">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Facebook
+                </a>
+              </li>
+              <li class="social-sharing-item">
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ .Permalink | urlquery }}"
+                   class="social-sharing-link linkedin"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="Share on LinkedIn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                  LinkedIn
+                </a>
+              </li>
+            </ul>
+          </div>
+        {{- end }}
+
+        {{- /* Post navigation */ -}}
+        <nav class="post-navigation" aria-label="Post navigation">
+          <div class="post-nav-links">
+            {{- with .PrevInSection }}
+              <div class="post-nav-item post-nav-prev">
+                <span class="post-nav-label">Previous post</span>
+                <a href="{{ .RelPermalink }}" class="post-nav-link" rel="prev">
+                  <span class="post-nav-title">{{ .Title }}</span>
+                </a>
+              </div>
+            {{- end }}
+
+            {{- with .NextInSection }}
+              <div class="post-nav-item post-nav-next">
+                <span class="post-nav-label">Next post</span>
+                <a href="{{ .RelPermalink }}" class="post-nav-link" rel="next">
+                  <span class="post-nav-title">{{ .Title }}</span>
+                </a>
+              </div>
+            {{- end }}
+          </div>
+        </nav>
+      </footer>
+
+      {{- /* Hidden microformats and schema data */ -}}
+      <div style="display: none;">
+        <a class="u-url" href="{{ .Permalink }}">{{ .Title }}</a>
+        <meta itemprop="url" content="{{ .Permalink }}">
+        <meta itemprop="mainEntityOfPage" content="{{ .Permalink }}">
+
+        {{- /* Publisher information */ -}}
+        <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+          <meta itemprop="name" content="{{ .Site.Title }}">
+          <meta itemprop="url" content="{{ .Site.BaseURL }}">
+          {{- with .Site.Params.logo }}
+            <meta itemprop="logo" content="{{ . | absURL }}">
+          {{- end }}
+        </div>
+      </div>
+    </article>
+
+    {{- /* Sidebar */ -}}
+    <aside class="post-sidebar" role="complementary">
+      {{- /* Table of contents */ -}}
+      {{- partial "toc.html" . }}
+
+      {{- /* Author bio */ -}}
+      {{- if or .Params.author .Site.Params.author }}
+        <div class="author-bio-card h-card">
+          <h3 class="author-bio-title">About the Author</h3>
+          <div class="author-bio-content">
+            {{- with .Params.author_avatar }}
+              <img src="{{ . | relURL }}"
+                   alt="{{ $.Params.author | default $.Site.Params.author }}"
+                   class="author-bio-avatar u-photo"
+                   width="80"
+                   height="80"
+                   loading="lazy">
+            {{- end }}
+            <div class="author-bio-info">
+              <h4 class="author-bio-name p-name">
+                {{- with .Params.author }}{{ . }}{{- else }}{{ .Site.Params.author }}{{- end }}
+              </h4>
+              {{- with .Params.author_bio }}
+                <p class="author-bio-description p-note">{{ . }}</p>
+              {{- end }}
+              {{- with .Site.Params.author_url }}
+                <a href="{{ . }}" class="author-bio-link u-url" target="_blank" rel="noopener noreferrer">
+                  Visit website
+                </a>
+              {{- end }}
+            </div>
+          </div>
+        </div>
+      {{- end }}
+
+      {{- /* Related posts */ -}}
+      {{- $related := .Site.RegularPages.Related . | first 3 }}
+      {{- if $related }}
+        <div class="related-posts">
+          <h3 class="related-posts-title">Related Posts</h3>
+          <ul class="related-posts-list">
+            {{- range $related }}
+              <li class="related-post-item">
+                <article class="related-post">
+                  {{- with .Params.featured_image }}
+                    <div class="related-post-image">
+                      <a href="{{ $.RelPermalink }}" aria-hidden="true" tabindex="-1">
+                        {{- $image := resources.Get . }}
+                        {{- if $image }}
+                          {{- $thumbnail := $image.Resize "150x100 webp q85" }}
+                          <img src="{{ $thumbnail.RelPermalink }}"
+                               alt="{{ $.Title }}"
+                               class="related-post-img"
+                               width="150"
+                               height="100"
+                               loading="lazy">
+                        {{- else }}
+                          <img src="{{ . | relURL }}"
+                               alt="{{ $.Title }}"
+                               class="related-post-img"
+                               width="150"
+                               height="100"
+                               loading="lazy">
+                        {{- end }}
+                      </a>
+                    </div>
+                  {{- end }}
+                  <div class="related-post-content">
+                    <h4 class="related-post-title">
+                      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                    </h4>
+                    <time class="related-post-date" datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+                      {{ .Date.Format "Jan 2, 2006" }}
+                    </time>
+                  </div>
+                </article>
+              </li>
+            {{- end }}
+          </ul>
+        </div>
+      {{- end }}
+    </aside>
+  </div>
+
+  {{- /* Comments section */ -}}
+  {{- if .Site.Params.comments.enabled }}
+    <section class="comments-section" aria-labelledby="comments-heading">
+      <div class="container">
+        <h2 id="comments-heading" class="comments-title">Comments</h2>
+
+        {{- /* Placeholder for comment system integration */ -}}
+        <div class="comments-placeholder">
+          {{- if eq .Site.Params.comments.provider "disqus" }}
+            <div id="disqus_thread"></div>
+            <script>
+              var disqus_config = function () {
+                this.page.url = "{{ .Permalink }}";
+                this.page.identifier = "{{ .RelPermalink }}";
+              };
+              (function() {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://{{ .Site.Params.comments.disqus_shortname }}.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+              })();
+            </script>
+          {{- else if eq .Site.Params.comments.provider "utterances" }}
+            <script src="https://utteranc.es/client.js"
+                    repo="{{ .Site.Params.comments.utterances_repo }}"
+                    issue-term="{{ .Site.Params.comments.utterances_issue_term | default "pathname" }}"
+                    theme="{{ .Site.Params.comments.utterances_theme | default "github-light" }}"
+                    crossorigin="anonymous"
+                    async>
+            </script>
+          {{- else }}
+            <p class="comments-info">
+              Comments are enabled but no provider is configured.
+              Please configure a comment provider in your site configuration.
+            </p>
+          {{- end }}
+        </div>
+      </div>
+    </section>
+  {{- end }}
+{{- end }}

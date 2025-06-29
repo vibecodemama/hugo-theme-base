@@ -1,0 +1,315 @@
+{{- define "main" }}
+  {{- /* Term template (shows posts for a specific term) */ -}}
+
+  <div class="term-page">
+    {{- /* Page header */ -}}
+    <header class="term-header">
+      <div class="container">
+        {{- /* Breadcrumbs */ -}}
+        <nav class="breadcrumbs" aria-label="Breadcrumb navigation">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a href="{{ .Site.BaseURL }}" class="breadcrumb-link">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{{ .Parent.RelPermalink }}" class="breadcrumb-link">{{ .Parent.Title }}</a>
+            </li>
+            <li class="breadcrumb-item current" aria-current="page">
+              <span class="breadcrumb-current">{{ .Title }}</span>
+            </li>
+          </ol>
+        </nav>
+
+        {{- /* Term title and description */ -}}
+        <div class="term-title-section">
+          <div class="term-meta-info">
+            <span class="term-type">{{ .Parent.Title | singularize }}</span>
+            <h1 class="term-title">{{ .Title }}</h1>
+          </div>
+
+          {{- with .Description }}
+            <p class="term-description">{{ . }}</p>
+          {{- end }}
+
+          {{- /* Term statistics */ -}}
+          {{- $posts := .Pages }}
+          {{- if $posts }}
+            <div class="term-stats">
+              <div class="stat-item">
+                <span class="stat-number">{{ len $posts }}</span>
+                <span class="stat-label">{{ if eq (len $posts) 1 }}post{{ else }}posts{{ end }}</span>
+              </div>
+
+              {{- /* Calculate date range */ -}}
+              {{- $sortedPosts := sort $posts "Date" "desc" }}
+              {{- $newest := index $sortedPosts 0 }}
+              {{- $oldest := index $sortedPosts (sub (len $sortedPosts) 1) }}
+
+              <div class="stat-item">
+                <span class="stat-number">{{ $oldest.Date.Format "2006" }}</span>
+                <span class="stat-label">to {{ $newest.Date.Format "2006" }}</span>
+              </div>
+
+              {{- /* RSS feed link */ -}}
+              {{- with .OutputFormats.Get "rss" }}
+                <a href="{{ .Permalink }}" class="term-rss-link" aria-label="RSS feed for {{ $.Title }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795.001 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.71-7.118-15.758-15.839-15.82zm0-3.368c10.58.046 19.152 8.594 19.183 19.188h4.817c-.03-13.231-10.755-23.954-24-24v4.812z"/>
+                  </svg>
+                  RSS Feed
+                </a>
+              {{- end }}
+            </div>
+          {{- end }}
+        </div>
+      </div>
+    </header>
+
+    {{- /* Filter and sort options */ -}}
+    {{- if gt (len $posts) 5 }}
+      <div class="term-filters">
+        <div class="container">
+          <div class="filter-controls">
+            {{- /* Sort options */ -}}
+            <div class="sort-controls">
+              <label for="sort-select" class="sort-label">Sort by:</label>
+              <select id="sort-select" class="sort-select">
+                <option value="date-desc">Newest first</option>
+                <option value="date-asc">Oldest first</option>
+                <option value="title-asc">Title A-Z</option>
+                <option value="title-desc">Title Z-A</option>
+              </select>
+            </div>
+
+            {{- /* Search within posts */ -}}
+            <div class="search-controls">
+              <label for="post-search" class="search-label">Search posts:</label>
+              <input type="search"
+                     id="post-search"
+                     class="search-input"
+                     placeholder="Filter posts..."
+                     aria-describedby="search-help">
+              <span id="search-help" class="search-help">Search by title or content</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{- end }}
+
+    {{- /* Posts list */ -}}
+    <section class="term-content" aria-labelledby="posts-heading">
+      <div class="container">
+        {{- if $posts }}
+          <h2 id="posts-heading" class="visually-hidden">Posts tagged with {{ .Title }}</h2>
+
+          {{- /* Posts grid */ -}}
+          <div class="posts-grid" id="posts-container">
+            {{- $paginator := .Paginate $posts }}
+            {{- range $paginator.Pages }}
+              {{- partial "post-item.html" . }}
+            {{- end }}
+          </div>
+
+          {{- /* Pagination */ -}}
+          {{- if gt $paginator.TotalPages 1 }}
+            <nav class="pagination" role="navigation" aria-label="Posts pagination">
+              <div class="pagination-container">
+                {{- if $paginator.HasPrev }}
+                  <a href="{{ $paginator.Prev.URL }}" class="pagination-link pagination-prev" rel="prev">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Previous
+                  </a>
+                {{- end }}
+
+                <div class="pagination-numbers">
+                  {{- $currentPage := $paginator.PageNumber }}
+                  {{- $totalPages := $paginator.TotalPages }}
+
+                  {{- /* Show first page */ -}}
+                  {{- if gt $currentPage 3 }}
+                    <a href="{{ $paginator.First.URL }}" class="pagination-number">1</a>
+                    {{- if gt $currentPage 4 }}
+                      <span class="pagination-ellipsis">…</span>
+                    {{- end }}
+                  {{- end }}
+
+                  {{- /* Show pages around current */ -}}
+                  {{- range $paginator.Pagers }}
+                    {{- $pageNum := .PageNumber }}
+                    {{- if and (ge $pageNum (sub $currentPage 2)) (le $pageNum (add $currentPage 2)) }}
+                      {{- if eq . $paginator }}
+                        <span class="pagination-number current" aria-current="page">{{ $pageNum }}</span>
+                      {{- else }}
+                        <a href="{{ .URL }}" class="pagination-number">{{ $pageNum }}</a>
+                      {{- end }}
+                    {{- end }}
+                  {{- end }}
+
+                  {{- /* Show last page */ -}}
+                  {{- if lt $currentPage (sub $totalPages 2) }}
+                    {{- if lt $currentPage (sub $totalPages 3) }}
+                      <span class="pagination-ellipsis">…</span>
+                    {{- end }}
+                    <a href="{{ $paginator.Last.URL }}" class="pagination-number">{{ $totalPages }}</a>
+                  {{- end }}
+                </div>
+
+                {{- if $paginator.HasNext }}
+                  <a href="{{ $paginator.Next.URL }}" class="pagination-link pagination-next" rel="next">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </a>
+                {{- end }}
+              </div>
+
+              {{- /* Pagination info */ -}}
+              <div class="pagination-info">
+                <span class="pagination-stats">
+                  Showing {{ $paginator.PageSize }} of {{ $paginator.TotalNumberOfElements }} posts
+                  (page {{ $paginator.PageNumber }} of {{ $paginator.TotalPages }})
+                </span>
+              </div>
+            </nav>
+          {{- end }}
+
+        {{- else }}
+          {{- /* No posts found */ -}}
+          <div class="no-posts">
+            <h2 class="no-posts-title">No posts found</h2>
+            <p class="no-posts-message">
+              There are no posts tagged with "{{ .Title }}" yet.
+            </p>
+            <a href="{{ .Parent.RelPermalink }}" class="no-posts-link">
+              Browse all {{ .Parent.Title }}
+            </a>
+          </div>
+        {{- end }}
+      </div>
+    </section>
+
+    {{- /* Related terms */ -}}
+    {{- $taxonomy := .Data.Plural }}
+    {{- $currentTerm := .Title }}
+    {{- $allTerms := index .Site.Taxonomies $taxonomy }}
+    {{- $relatedTerms := slice }}
+
+    {{- range $allTerms }}
+      {{- if and (ne .Page.Title $currentTerm) (gt (len .Pages) 0) }}
+        {{- $relatedTerms = $relatedTerms | append . }}
+      {{- end }}
+    {{- end }}
+
+    {{- if $relatedTerms }}
+      <aside class="related-terms" aria-labelledby="related-heading">
+        <div class="container">
+          <h2 id="related-heading" class="related-terms-title">
+            Related {{ .Parent.Title }}
+          </h2>
+
+          <div class="related-terms-grid">
+            {{- range first 8 $relatedTerms }}
+              <div class="related-term-item">
+                <a href="{{ .Page.RelPermalink }}" class="related-term-link">
+                  <span class="related-term-name">{{ .Page.Title }}</span>
+                  <span class="related-term-count">{{ len .Pages }}</span>
+                </a>
+              </div>
+            {{- end }}
+          </div>
+
+          {{- if gt (len $relatedTerms) 8 }}
+            <div class="related-terms-more">
+              <a href="{{ .Parent.RelPermalink }}" class="related-terms-link">
+                View all {{ .Parent.Title }}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </a>
+            </div>
+          {{- end }}
+        </div>
+      </aside>
+    {{- end }}
+  </div>
+
+  {{- /* JavaScript for filtering and sorting */ -}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sortSelect = document.getElementById('sort-select');
+      const searchInput = document.getElementById('post-search');
+      const postsContainer = document.getElementById('posts-container');
+
+      if (!postsContainer) return;
+
+      const posts = Array.from(postsContainer.querySelectorAll('.post-item'));
+
+      // Sort functionality
+      if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+          const sortValue = this.value;
+          let sortedPosts = posts.slice();
+
+          switch (sortValue) {
+            case 'date-desc':
+              sortedPosts.sort((a, b) => {
+                const dateA = new Date(a.querySelector('.post-date').getAttribute('datetime'));
+                const dateB = new Date(b.querySelector('.post-date').getAttribute('datetime'));
+                return dateB - dateA;
+              });
+              break;
+            case 'date-asc':
+              sortedPosts.sort((a, b) => {
+                const dateA = new Date(a.querySelector('.post-date').getAttribute('datetime'));
+                const dateB = new Date(b.querySelector('.post-date').getAttribute('datetime'));
+                return dateA - dateB;
+              });
+              break;
+            case 'title-asc':
+              sortedPosts.sort((a, b) => {
+                const titleA = a.querySelector('.post-item-title').textContent.trim();
+                const titleB = b.querySelector('.post-item-title').textContent.trim();
+                return titleA.localeCompare(titleB);
+              });
+              break;
+            case 'title-desc':
+              sortedPosts.sort((a, b) => {
+                const titleA = a.querySelector('.post-item-title').textContent.trim();
+                const titleB = b.querySelector('.post-item-title').textContent.trim();
+                return titleB.localeCompare(titleA);
+              });
+              break;
+          }
+
+          // Re-append sorted posts
+          sortedPosts.forEach(post => postsContainer.appendChild(post));
+        });
+      }
+
+      // Search functionality
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase().trim();
+
+          posts.forEach(post => {
+            const title = post.querySelector('.post-item-title').textContent.toLowerCase();
+            const excerpt = post.querySelector('.post-item-excerpt').textContent.toLowerCase();
+            const isMatch = title.includes(searchTerm) || excerpt.includes(searchTerm);
+
+            post.style.display = isMatch ? '' : 'none';
+          });
+
+          // Update visible count
+          const visiblePosts = posts.filter(post => post.style.display !== 'none');
+          const statsElement = document.querySelector('.pagination-stats');
+          if (statsElement && searchTerm) {
+            statsElement.textContent = `Showing ${visiblePosts.length} of ${posts.length} posts (filtered)`;
+          }
+        });
+      }
+    });
+  </script>
+{{- end }}

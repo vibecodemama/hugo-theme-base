@@ -1,0 +1,330 @@
+{{- define "main" }}
+  {{- /* Taxonomy list template (shows all terms in a taxonomy) */ -}}
+
+  <div class="taxonomy-page">
+    {{- /* Page header */ -}}
+    <header class="taxonomy-header">
+      <div class="container">
+        {{- /* Breadcrumbs */ -}}
+        <nav class="breadcrumbs" aria-label="Breadcrumb navigation">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a href="{{ .Site.BaseURL }}" class="breadcrumb-link">Home</a>
+            </li>
+            <li class="breadcrumb-item current" aria-current="page">
+              <span class="breadcrumb-current">{{ .Title }}</span>
+            </li>
+          </ol>
+        </nav>
+
+        {{- /* Page title and description */ -}}
+        <div class="taxonomy-title-section">
+          <h1 class="taxonomy-title">{{ .Title }}</h1>
+
+          {{- with .Description }}
+            <p class="taxonomy-description">{{ . }}</p>
+          {{- else }}
+            <p class="taxonomy-description">
+              {{- if eq .Data.Plural "categories" }}
+                Browse posts by category to find content on specific topics.
+              {{- else if eq .Data.Plural "tags" }}
+                Explore posts by tags to discover related content and themes.
+              {{- else }}
+                Browse all {{ .Data.Plural }} to find related content.
+              {{- end }}
+            </p>
+          {{- end }}
+
+          {{- /* Term count */ -}}
+          {{- $terms := .Data.Terms }}
+          {{- if $terms }}
+            <div class="taxonomy-meta">
+              <span class="term-count">
+                {{ len $terms }} {{ .Data.Singular }}{{ if ne (len $terms) 1 }}s{{ end }}
+              </span>
+
+              {{- /* RSS feed link */ -}}
+              {{- with .OutputFormats.Get "rss" }}
+                <a href="{{ .Permalink }}" class="rss-link" aria-label="RSS feed for {{ $.Title }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795.001 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.71-7.118-15.758-15.839-15.82zm0-3.368c10.58.046 19.152 8.594 19.183 19.188h4.817c-.03-13.231-10.755-23.954-24-24v4.812z"/>
+                  </svg>
+                  RSS Feed
+                </a>
+              {{- end }}
+            </div>
+          {{- end }}
+        </div>
+      </div>
+    </header>
+
+    {{- /* Filter and sort options */ -}}
+    {{- if gt (len $terms) 10 }}
+      <div class="taxonomy-filters">
+        <div class="container">
+          <div class="filter-controls">
+            {{- /* Sort options */ -}}
+            <div class="sort-controls">
+              <label for="sort-select" class="sort-label">Sort by:</label>
+              <select id="sort-select" class="sort-select">
+                <option value="count-desc">Most posts</option>
+                <option value="count-asc">Fewest posts</option>
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+              </select>
+            </div>
+
+            {{- /* Search within terms */ -}}
+            <div class="search-controls">
+              <label for="term-search" class="search-label">Search {{ .Data.Plural }}:</label>
+              <input type="search"
+                     id="term-search"
+                     class="search-input"
+                     placeholder="Filter {{ .Data.Plural }}..."
+                     aria-describedby="search-help">
+              <span id="search-help" class="search-help">Search by name</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{- end }}
+
+    {{- /* Terms list */ -}}
+    <section class="taxonomy-content" aria-labelledby="terms-heading">
+      <div class="container">
+        {{- if $terms }}
+          <h2 id="terms-heading" class="visually-hidden">{{ .Title }}</h2>
+
+          {{- /* Terms grid */ -}}
+          <div class="terms-grid" id="terms-container">
+            {{- range $terms.ByCount.Reverse }}
+              <article class="term-card">
+                <div class="term-card-content">
+                  <h3 class="term-title">
+                    <a href="{{ .Page.RelPermalink }}" class="term-link">
+                      {{ .Page.Title }}
+                    </a>
+                  </h3>
+
+                  <div class="term-meta">
+                    <span class="term-post-count">
+                      {{ .Count }} {{ if eq .Count 1 }}post{{ else }}posts{{ end }}
+                    </span>
+
+                    {{- with .Page.Description }}
+                      <p class="term-description">{{ . }}</p>
+                    {{- end }}
+                  </div>
+
+                  {{- /* Show recent posts in this term */ -}}
+                  {{- $recentPosts := first 3 .Pages }}
+                  {{- if $recentPosts }}
+                    <div class="term-recent-posts">
+                      <h4 class="recent-posts-title">Recent posts:</h4>
+                      <ul class="recent-posts-list">
+                        {{- range $recentPosts }}
+                          <li class="recent-post-item">
+                            <a href="{{ .RelPermalink }}" class="recent-post-link">
+                              {{ .Title }}
+                            </a>
+                            <time class="recent-post-date" datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+                              {{ .Date.Format "Jan 2" }}
+                            </time>
+                          </li>
+                        {{- end }}
+                      </ul>
+                    </div>
+                  {{- end }}
+                </div>
+
+                {{- /* Visual indicator for term size */ -}}
+                <div class="term-indicator">
+                  {{- $maxCount := (index $terms.ByCount 0).Count }}
+                  {{- $percentage := div (mul .Count 100) $maxCount }}
+                  <div class="term-bar" style="width: {{ $percentage }}%"></div>
+                </div>
+              </article>
+            {{- end }}
+          </div>
+
+          {{- /* Tag cloud view (alternative display) */ -}}
+          {{- if eq .Data.Plural "tags" }}
+            <div class="view-toggle">
+              <button id="grid-view" class="view-button active" aria-pressed="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                  <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                  <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                  <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Grid View
+              </button>
+              <button id="cloud-view" class="view-button" aria-pressed="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M18 10H20C21.1046 10 22 10.8954 22 12C22 13.1046 21.1046 14 20 14H18M18 10C18 8.89543 17.1046 8 16 8H4C2.89543 8 2 8.89543 2 10C2 11.1046 2.89543 12 4 12H16C17.1046 12 18 11.1046 18 10Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Cloud View
+              </button>
+            </div>
+
+            <div class="tag-cloud" id="tag-cloud" style="display: none;">
+              {{- $maxCount := (index $terms.ByCount 0).Count }}
+              {{- range $terms.ByCount.Reverse }}
+                {{- $weight := div (mul .Count 5) $maxCount }}
+                {{- $size := add 0.8 (mul $weight 0.8) }}
+                <a href="{{ .Page.RelPermalink }}"
+                   class="tag-cloud-item"
+                   style="font-size: {{ printf "%.1f" $size }}em;"
+                   title="{{ .Count }} posts">
+                  {{ .Page.Title }}
+                </a>
+              {{- end }}
+            </div>
+          {{- end }}
+
+        {{- else }}
+          {{- /* No terms found */ -}}
+          <div class="no-terms">
+            <h2 class="no-terms-title">No {{ .Data.Plural }} found</h2>
+            <p class="no-terms-message">
+              There are no {{ .Data.Plural }} available yet.
+            </p>
+            <a href="{{ .Site.BaseURL }}" class="no-terms-link">
+              Return to homepage
+            </a>
+          </div>
+        {{- end }}
+      </div>
+    </section>
+
+    {{- /* Related taxonomies */ -}}
+    {{- if gt (len .Site.Taxonomies) 1 }}
+      <aside class="related-taxonomies" aria-labelledby="related-heading">
+        <div class="container">
+          <h2 id="related-heading" class="related-taxonomies-title">Explore More</h2>
+
+          <div class="related-taxonomies-list">
+            {{- range $name, $taxonomy := .Site.Taxonomies }}
+              {{- if ne $name $.Data.Plural }}
+                {{- $taxonomyPage := site.GetPage (printf "/%s" $name) }}
+                {{- if $taxonomyPage }}
+                  <div class="related-taxonomy">
+                    <h3 class="related-taxonomy-title">
+                      <a href="{{ $taxonomyPage.RelPermalink }}">{{ $taxonomyPage.Title }}</a>
+                    </h3>
+                    <p class="related-taxonomy-count">
+                      {{ len $taxonomy }} {{ singularize $name }}{{ if ne (len $taxonomy) 1 }}s{{ end }}
+                    </p>
+                  </div>
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          </div>
+        </div>
+      </aside>
+    {{- end }}
+  </div>
+
+  {{- /* JavaScript for filtering and view switching */ -}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sortSelect = document.getElementById('sort-select');
+      const searchInput = document.getElementById('term-search');
+      const termsContainer = document.getElementById('terms-container');
+      const gridViewBtn = document.getElementById('grid-view');
+      const cloudViewBtn = document.getElementById('cloud-view');
+      const tagCloud = document.getElementById('tag-cloud');
+
+      if (!termsContainer) return;
+
+      const terms = Array.from(termsContainer.querySelectorAll('.term-card'));
+
+      // Sort functionality
+      if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+          const sortValue = this.value;
+          let sortedTerms = terms.slice();
+
+          switch (sortValue) {
+            case 'count-desc':
+              sortedTerms.sort((a, b) => {
+                const countA = parseInt(a.querySelector('.term-post-count').textContent);
+                const countB = parseInt(b.querySelector('.term-post-count').textContent);
+                return countB - countA;
+              });
+              break;
+            case 'count-asc':
+              sortedTerms.sort((a, b) => {
+                const countA = parseInt(a.querySelector('.term-post-count').textContent);
+                const countB = parseInt(b.querySelector('.term-post-count').textContent);
+                return countA - countB;
+              });
+              break;
+            case 'name-asc':
+              sortedTerms.sort((a, b) => {
+                const nameA = a.querySelector('.term-title').textContent.trim();
+                const nameB = b.querySelector('.term-title').textContent.trim();
+                return nameA.localeCompare(nameB);
+              });
+              break;
+            case 'name-desc':
+              sortedTerms.sort((a, b) => {
+                const nameA = a.querySelector('.term-title').textContent.trim();
+                const nameB = b.querySelector('.term-title').textContent.trim();
+                return nameB.localeCompare(nameA);
+              });
+              break;
+          }
+
+          // Re-append sorted terms
+          sortedTerms.forEach(term => termsContainer.appendChild(term));
+        });
+      }
+
+      // Search functionality
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase().trim();
+
+          terms.forEach(term => {
+            const title = term.querySelector('.term-title').textContent.toLowerCase();
+            const description = term.querySelector('.term-description')?.textContent.toLowerCase() || '';
+            const isMatch = title.includes(searchTerm) || description.includes(searchTerm);
+
+            term.style.display = isMatch ? '' : 'none';
+          });
+
+          // Update visible count
+          const visibleTerms = terms.filter(term => term.style.display !== 'none');
+          const countElement = document.querySelector('.term-count');
+          if (countElement && searchTerm) {
+            countElement.textContent = `${visibleTerms.length} of ${terms.length} terms`;
+          } else if (countElement) {
+            countElement.textContent = `${terms.length} ${terms.length === 1 ? 'term' : 'terms'}`;
+          }
+        });
+      }
+
+      // View switching for tags
+      if (gridViewBtn && cloudViewBtn && tagCloud) {
+        gridViewBtn.addEventListener('click', function() {
+          termsContainer.style.display = '';
+          tagCloud.style.display = 'none';
+          this.classList.add('active');
+          this.setAttribute('aria-pressed', 'true');
+          cloudViewBtn.classList.remove('active');
+          cloudViewBtn.setAttribute('aria-pressed', 'false');
+        });
+
+        cloudViewBtn.addEventListener('click', function() {
+          termsContainer.style.display = 'none';
+          tagCloud.style.display = '';
+          this.classList.add('active');
+          this.setAttribute('aria-pressed', 'true');
+          gridViewBtn.classList.remove('active');
+          gridViewBtn.setAttribute('aria-pressed', 'false');
+        });
+      }
+    });
+  </script>
+{{- end }}

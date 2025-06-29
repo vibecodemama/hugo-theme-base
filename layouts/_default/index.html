@@ -1,0 +1,214 @@
+{{- define "main" }}
+  {{- /* Home page template with hero section and post grid */ -}}
+
+  {{- /* Hero section */ -}}
+  <section class="hero" role="banner">
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          {{- with .Site.Params.hero.title }}
+            {{ . }}
+          {{- else }}
+            Welcome to {{ .Site.Title }}
+          {{- end }}
+        </h1>
+
+        {{- with .Site.Params.hero.subtitle }}
+          <p class="hero-subtitle">{{ . }}</p>
+        {{- end }}
+
+        {{- with .Site.Params.hero.description }}
+          <div class="hero-description">
+            {{ . | markdownify }}
+          </div>
+        {{- end }}
+
+        {{- /* Hero call-to-action buttons */ -}}
+        {{- with .Site.Params.hero.cta }}
+          <div class="hero-cta">
+            {{- range . }}
+              <a href="{{ .url | relURL }}"
+                 class="hero-cta-button {{ .class | default "primary" }}"
+                 {{- if strings.HasPrefix .url "http" }} target="_blank" rel="noopener noreferrer"{{- end }}>
+                {{ .text }}
+                {{- if strings.HasPrefix .url "http" }}
+                  <svg class="external-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M18 13V19C18 19.5304 17.7893 20.0391 17.4142 20.4142C17.0391 20.7893 16.5304 21 16 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V8C3 7.46957 3.21071 6.96086 3.58579 6.58579C3.96086 6.21071 4.46957 6 5 6H11M15 3H21M21 3V9M21 3L9 15" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                {{- end }}
+              </a>
+            {{- end }}
+          </div>
+        {{- end }}
+      </div>
+
+      {{- /* Hero image */ -}}
+      {{- with .Site.Params.hero.image }}
+        <div class="hero-image">
+          {{- $image := resources.Get . }}
+          {{- if $image }}
+            {{- $desktop := $image.Resize "800x600 webp q85" }}
+            {{- $mobile := $image.Resize "600x450 webp q85" }}
+            {{- $fallback := $image.Resize "800x600 jpg q85" }}
+            <picture>
+              <source media="(max-width: 768px)" srcset="{{ $mobile.RelPermalink }}" type="image/webp">
+              <source media="(min-width: 769px)" srcset="{{ $desktop.RelPermalink }}" type="image/webp">
+              <img src="{{ $fallback.RelPermalink }}"
+                   alt="{{ $.Site.Params.hero.image_alt | default "Hero image" }}"
+                   class="hero-img"
+                   width="800"
+                   height="600"
+                   loading="eager"
+                   decoding="async">
+            </picture>
+          {{- else }}
+            <img src="{{ . | relURL }}"
+                 alt="{{ $.Site.Params.hero.image_alt | default "Hero image" }}"
+                 class="hero-img"
+                 width="800"
+                 height="600"
+                 loading="eager"
+                 decoding="async">
+          {{- end }}
+        </div>
+      {{- end }}
+    </div>
+  </section>
+
+  {{- /* Featured posts section (optional) */ -}}
+  {{- $featured := where .Site.RegularPages "Params.featured" true }}
+  {{- if $featured }}
+    <section class="featured-posts" aria-labelledby="featured-heading">
+      <div class="container">
+        <h2 id="featured-heading" class="section-title">Featured Posts</h2>
+        <div class="featured-posts-grid">
+          {{- range first 3 $featured }}
+            {{- partial "post-item.html" . }}
+          {{- end }}
+        </div>
+      </div>
+    </section>
+  {{- end }}
+
+  {{- /* Recent posts section */ -}}
+  {{- $posts := where .Site.RegularPages "Type" "posts" }}
+  {{- if $posts }}
+    <section class="recent-posts" aria-labelledby="recent-heading">
+      <div class="container">
+        <header class="section-header">
+          <h2 id="recent-heading" class="section-title">
+            {{- with .Site.Params.home.posts_title }}
+              {{ . }}
+            {{- else }}
+              Recent Posts
+            {{- end }}
+          </h2>
+
+          {{- with .Site.Params.home.posts_subtitle }}
+            <p class="section-subtitle">{{ . }}</p>
+          {{- end }}
+
+          {{- if gt (len $posts) 6 }}
+            <a href="{{ "/posts/" | relURL }}" class="section-link">
+              View all posts
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </a>
+          {{- end }}
+        </header>
+
+        {{- /* Posts grid */ -}}
+        <div class="posts-grid">
+          {{- $paginator := .Paginate $posts 6 }}
+          {{- range $paginator.Pages }}
+            {{- partial "post-item.html" . }}
+          {{- end }}
+        </div>
+
+        {{- /* Pagination */ -}}
+        {{- if gt $paginator.TotalPages 1 }}
+          <nav class="pagination" role="navigation" aria-label="Posts pagination">
+            <div class="pagination-container">
+              {{- if $paginator.HasPrev }}
+                <a href="{{ $paginator.Prev.URL }}" class="pagination-link pagination-prev" rel="prev">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  Previous
+                </a>
+              {{- end }}
+
+              <div class="pagination-numbers">
+                {{- range $paginator.Pagers }}
+                  {{- if eq . $paginator }}
+                    <span class="pagination-number current" aria-current="page">{{ .PageNumber }}</span>
+                  {{- else }}
+                    <a href="{{ .URL }}" class="pagination-number">{{ .PageNumber }}</a>
+                  {{- end }}
+                {{- end }}
+              </div>
+
+              {{- if $paginator.HasNext }}
+                <a href="{{ $paginator.Next.URL }}" class="pagination-link pagination-next" rel="next">
+                  Next
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </a>
+              {{- end }}
+            </div>
+          </nav>
+        {{- end }}
+      </div>
+    </section>
+  {{- end }}
+
+  {{- /* Newsletter signup (optional) */ -}}
+  {{- if .Site.Params.newsletter.enabled }}
+    <section class="newsletter-signup" aria-labelledby="newsletter-heading">
+      <div class="container">
+        <div class="newsletter-content">
+          <h2 id="newsletter-heading" class="newsletter-title">
+            {{ .Site.Params.newsletter.title | default "Stay Updated" }}
+          </h2>
+
+          <p class="newsletter-description">
+            {{ .Site.Params.newsletter.description | default "Get the latest posts delivered right to your inbox." }}
+          </p>
+
+          <form class="newsletter-form"
+                action="{{ .Site.Params.newsletter.action }}"
+                method="post"
+                {{- if .Site.Params.newsletter.target }} target="{{ .Site.Params.newsletter.target }}"{{- end }}>
+            <div class="newsletter-input-group">
+              <label for="newsletter-email" class="newsletter-label">Email address</label>
+              <input type="email"
+                     id="newsletter-email"
+                     name="{{ .Site.Params.newsletter.email_field | default "email" }}"
+                     class="newsletter-input"
+                     placeholder="Enter your email"
+                     required
+                     aria-describedby="newsletter-privacy">
+              <button type="submit" class="newsletter-button">
+                Subscribe
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+
+            {{- with .Site.Params.newsletter.privacy_text }}
+              <p id="newsletter-privacy" class="newsletter-privacy">{{ . | safeHTML }}</p>
+            {{- end }}
+
+            {{- /* Hidden fields for newsletter service */ -}}
+            {{- range .Site.Params.newsletter.hidden_fields }}
+              <input type="hidden" name="{{ .name }}" value="{{ .value }}">
+            {{- end }}
+          </form>
+        </div>
+      </div>
+    </section>
+  {{- end }}
+{{- end }}

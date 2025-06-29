@@ -1,0 +1,19 @@
+name = "Hugo Base Theme"
+license = "MIT"
+licenselink = "https://github.com/vibecodemama/hugo-base-theme/blob/main/LICENSE"
+description = "A comprehensive, semantic, and accessible starting point for Hugo theme development with modern best practices."
+homepage = "https://github.com/vibecodemama/hugo-base-theme"
+demosite = "https://hugo-base-theme-demo.netlify.app"
+tags = ["blog", "responsive", "accessibility", "semantic", "base", "starter", "modern", "seo"]
+features = ["responsive", "accessibility", "seo", "dark-mode", "microformats", "structured-data", "performance"]
+min_version = "0.112.0"
+
+[author]
+  name = "Vibe Code Mama"
+  homepage = "https://vibecodemama.com"
+
+# Theme capabilities
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.112.0"

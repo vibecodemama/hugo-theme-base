@@ -1,0 +1,352 @@
+{{- define "main" }}
+  {{- /* 404 Error page template */ -}}
+  <div class="error-page">
+    <div class="container">
+      <div class="error-content">
+        {{- /* Error illustration */ -}}
+        <div class="error-illustration">
+          <svg class="error-icon" width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="100" cy="100" r="80" stroke="currentColor" stroke-width="4" fill="none" opacity="0.2"/>
+            <path d="M70 70L130 130M130 70L70 130" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+            <text x="100" y="160" text-anchor="middle" font-size="24" font-weight="bold" fill="currentColor">404</text>
+          </svg>
+        </div>
+
+        {{- /* Error message */ -}}
+        <div class="error-message">
+          <h1 class="error-title">Page Not Found</h1>
+          <p class="error-description">
+            {{- with .Site.Params.error_404.message }}
+              {{ . }}
+            {{- else }}
+              Sorry, the page you're looking for doesn't exist or has been moved.
+            {{- end }}
+          </p>
+        </div>
+
+        {{- /* Search functionality */ -}}
+        <div class="error-search">
+          <h2 class="search-title">Search for content</h2>
+          <form class="search-form" role="search" aria-label="Site search">
+            <div class="search-input-wrapper">
+              <label for="error-search-input" class="visually-hidden">Search the site</label>
+              <input type="search"
+                     id="error-search-input"
+                     class="search-input"
+                     placeholder="Search posts, pages..."
+                     autocomplete="off"
+                     aria-describedby="search-instructions">
+              <button type="submit" class="search-submit" aria-label="Submit search">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="2"/>
+                  <path d="M15 15L19 19" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+            <p id="search-instructions" class="search-instructions">
+              Try searching for what you were looking for
+            </p>
+          </form>
+
+          <div class="search-results" id="search-results" aria-live="polite">
+            <!-- Search results will be populated here -->
+          </div>
+        </div>
+
+        {{- /* Navigation options */ -}}
+        <div class="error-navigation">
+          <h2 class="nav-title">Where would you like to go?</h2>
+
+          <div class="nav-options">
+            {{- /* Primary navigation */ -}}
+            <div class="nav-group">
+              <h3 class="nav-group-title">Main Pages</h3>
+              <ul class="nav-list">
+                <li class="nav-item">
+                  <a href="{{ .Site.BaseURL }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                      <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Home
+                  </a>
+                </li>
+
+                {{- /* Show main menu items */ -}}
+                {{- with .Site.Menus.main }}
+                  {{- range first 4 . }}
+                    <li class="nav-item">
+                      <a href="{{ .URL | relURL }}" class="nav-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        {{ .Name }}
+                      </a>
+                    </li>
+                  {{- end }}
+                {{- end }}
+              </ul>
+            </div>
+
+            {{- /* Recent posts */ -}}
+            {{- $recentPosts := first 3 (where .Site.RegularPages "Type" "posts") }}
+            {{- if $recentPosts }}
+              <div class="nav-group">
+                <h3 class="nav-group-title">Recent Posts</h3>
+                <ul class="nav-list">
+                  {{- range $recentPosts }}
+                    <li class="nav-item">
+                      <a href="{{ .RelPermalink }}" class="nav-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2"/>
+                          <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        {{ truncate 40 .Title }}
+                      </a>
+                    </li>
+                  {{- end }}
+                </ul>
+              </div>
+            {{- end }}
+
+            {{- /* Popular categories */ -}}
+            {{- if .Site.Taxonomies.categories }}
+              <div class="nav-group">
+                <h3 class="nav-group-title">Categories</h3>
+                <ul class="nav-list">
+                  {{- range first 4 (sort .Site.Taxonomies.categories "Count" "desc") }}
+                    <li class="nav-item">
+                      <a href="{{ .Page.RelPermalink }}" class="nav-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M22 19C22 19.5304 21.7893 20.0391 21.4142 20.4142C21.0391 20.7893 20.5304 21 20 21H4C3.46957 21 2.96086 20.7893 2.58579 20.4142C2.21071 20.0391 2 19.5304 2 19V5C2 4.46957 2.21071 3.96086 2.58579 3.58579C2.96086 3.21071 3.46957 3 4 3H9L11 6H20C20.5304 6 21.0391 6.21071 21.4142 6.58579C21.7893 6.96086 22 7.46957 22 8V19Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        {{ .Page.Title }} ({{ .Count }})
+                      </a>
+                    </li>
+                  {{- end }}
+                </ul>
+              </div>
+            {{- end }}
+          </div>
+        </div>
+
+        {{- /* Contact information */ -}}
+        {{- if or .Site.Params.contact.email .Site.Params.social }}
+          <div class="error-contact">
+            <h2 class="contact-title">Need Help?</h2>
+            <p class="contact-description">
+              If you think this is an error or need assistance, feel free to reach out.
+            </p>
+
+            <div class="contact-options">
+              {{- with .Site.Params.contact.email }}
+                <a href="mailto:{{ . }}" class="contact-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  Send Email
+                </a>
+              {{- end }}
+
+              {{- with .Site.Params.social.twitter }}
+                <a href="https://twitter.com/{{ . }}" class="contact-link" target="_blank" rel="noopener noreferrer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                  </svg>
+                  Twitter
+                </a>
+              {{- end }}
+            </div>
+          </div>
+        {{- end }}
+
+        {{- /* Back button */ -}}
+        <div class="error-actions">
+          <button onclick="history.back()" class="back-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Go Back
+          </button>
+
+          <a href="{{ .Site.BaseURL }}" class="home-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+              <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Go Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{- /* Search data as JSON */ -}}
+  <script id="search-data" type="application/json">
+    [
+      {{- range $index, $page := .Site.RegularPages -}}
+      {{- if $index }},{{ end }}
+      {
+        "title": {{ $page.Title | jsonify }},
+        "url": {{ $page.RelPermalink | jsonify }},
+        "content": {{ $page.Plain | jsonify }},
+        "summary": {{ $page.Summary | jsonify }},
+        "date": {{ $page.Date.Format "2006-01-02" | jsonify }},
+        "type": {{ $page.Type | jsonify }}
+      }
+      {{- end -}}
+    ]
+  </script>
+
+  {{- /* JavaScript for search functionality */ -}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchForm = document.querySelector('.search-form');
+      const searchInput = document.getElementById('error-search-input');
+      const searchResults = document.getElementById('search-results');
+
+      // Load site content from JSON
+      let siteContent = [];
+      try {
+        const searchDataElement = document.getElementById('search-data');
+        if (searchDataElement) {
+          siteContent = JSON.parse(searchDataElement.textContent);
+        }
+      } catch (e) {
+        console.warn('Could not load search data:', e);
+      }
+
+      if (searchForm && searchInput && searchResults) {
+        // Client-side search functionality
+        searchForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          performSearch();
+        });
+
+        // Search as user types (debounced)
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+          clearTimeout(searchTimeout);
+          const query = this.value.trim();
+
+          if (query === '') {
+            searchResults.innerHTML = '';
+            return;
+          }
+
+          if (query.length < 2) {
+            searchResults.innerHTML = '<p class="search-message">Please enter at least 2 characters to search.</p>';
+            return;
+          }
+
+          searchTimeout = setTimeout(() => {
+            performSearch();
+          }, 300);
+        });
+
+        function performSearch() {
+          const query = searchInput.value.trim().toLowerCase();
+
+          if (query.length < 2) {
+            searchResults.innerHTML = '<p class="search-message">Please enter at least 2 characters to search.</p>';
+            return;
+          }
+
+          searchResults.innerHTML = '<p class="search-message">Searching...</p>';
+
+          // Simple search algorithm
+          const results = siteContent.filter(page => {
+            return page.title.toLowerCase().includes(query) ||
+                   page.content.toLowerCase().includes(query) ||
+                   page.summary.toLowerCase().includes(query);
+          }).slice(0, 5); // Limit to 5 results
+
+          setTimeout(() => {
+            if (results.length === 0) {
+              searchResults.innerHTML = `
+                <div class="search-no-results">
+                  <p class="search-message">No results found for "${query}".</p>
+                  <p class="search-suggestion">Try different keywords or browse the navigation options above.</p>
+                </div>
+              `;
+            } else {
+              let resultsHTML = `<div class="search-results-list">
+                <p class="search-message">Found ${results.length} result${results.length > 1 ? 's' : ''} for "${query}":</p>
+                <ul class="search-results-items">`;
+
+              results.forEach(result => {
+                // Clean and prepare text content
+                const cleanTitle = cleanText(result.title);
+                const cleanSummary = cleanText(result.summary);
+
+                // Highlight search terms in title and summary
+                const highlightedTitle = highlightSearchTerms(cleanTitle, query);
+                const highlightedSummary = highlightSearchTerms(cleanSummary.substring(0, 150) + '...', query);
+
+                resultsHTML += `
+                  <li class="search-result-item">
+                    <a href="${result.url}" class="search-result-link">
+                      <h3 class="search-result-title">${highlightedTitle}</h3>
+                      <p class="search-result-summary">${highlightedSummary}</p>
+                      <span class="search-result-meta">${result.type} • ${result.date}</span>
+                    </a>
+                  </li>
+                `;
+              });
+
+              resultsHTML += '</ul></div>';
+              searchResults.innerHTML = resultsHTML;
+            }
+          }, 200);
+        }
+
+        function cleanText(text) {
+          if (!text) return '';
+
+          // Remove escaped characters and clean up the text
+          return text
+            .replace(/\\u003c/g, '<')
+            .replace(/\\u003e/g, '>')
+            .replace(/\\u0026/g, '&')
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'")
+            .replace(/\\n/g, ' ')
+            .replace(/\\r/g, ' ')
+            .replace(/\\t/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+
+        function highlightSearchTerms(text, query) {
+          const regex = new RegExp(`(${query})`, 'gi');
+          return text.replace(regex, '<mark>$1</mark>');
+        }
+      }
+
+      // Add some animation to the error icon
+      const errorIcon = document.querySelector('.error-icon');
+      if (errorIcon) {
+        errorIcon.style.animation = 'fadeIn 0.5s ease-in-out';
+      }
+    });
+  </script>
+
+  {{- /* CSS for animations */ -}}
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-content > * {
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .error-content > *:nth-child(2) { animation-delay: 0.1s; }
+    .error-content > *:nth-child(3) { animation-delay: 0.2s; }
+    .error-content > *:nth-child(4) { animation-delay: 0.3s; }
+    .error-content > *:nth-child(5) { animation-delay: 0.4s; }
+    .error-content > *:nth-child(6) { animation-delay: 0.5s; }
+  </style>
+{{- end }}

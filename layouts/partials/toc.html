@@ -1,0 +1,193 @@
+{{- /* Table of Contents partial for single post pages */ -}}
+{{- $headings := findRE "<h[2-3][^>]*>.*?</h[2-3]>" .Content -}}
+{{- if gt (len $headings) 2 }}
+  <aside class="table-of-contents" aria-labelledby="toc-heading">
+    <div class="toc-container">
+      <h3 id="toc-heading" class="toc-title">Table of Contents</h3>
+
+      {{- /* Toggle button for mobile */ -}}
+      <button class="toc-toggle" aria-expanded="false" aria-controls="toc-list" aria-label="Toggle table of contents">
+        <span class="toc-toggle-text">Show contents</span>
+        <svg class="toc-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+
+      {{- /* Table of contents list */ -}}
+      <nav class="toc-nav" role="navigation" aria-label="Table of contents">
+        <ol id="toc-list" class="toc-list">
+          {{- range $headings }}
+            {{- $heading := . }}
+            {{- $level := substr $heading 2 1 }}
+            {{- $id := replaceRE "<h[2-3][^>]*id=\"([^\"]+)\"[^>]*>.*?</h[2-3]>" "$1" $heading }}
+            {{- $text := replaceRE "<h[2-3][^>]*>(.*?)</h[2-3]>" "$1" $heading | plainify }}
+
+            {{- /* Generate ID if not present */ -}}
+            {{- if not $id }}
+              {{- $id = $text | urlize }}
+            {{- end }}
+
+            <li class="toc-item toc-level-{{ $level }}">
+              <a href="#{{ $id }}" class="toc-link" data-heading-id="{{ $id }}">
+                <span class="toc-text">{{ $text }}</span>
+              </a>
+            </li>
+          {{- end }}
+        </ol>
+      </nav>
+
+      {{- /* Reading progress indicator */ -}}
+      <div class="reading-progress" aria-label="Reading progress">
+        <div class="reading-progress-bar">
+          <div class="reading-progress-fill" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <span class="reading-progress-text">0% read</span>
+      </div>
+    </div>
+  </aside>
+
+  {{- /* JavaScript for TOC functionality */ -}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toc = document.querySelector('.table-of-contents');
+      const tocToggle = document.querySelector('.toc-toggle');
+      const tocList = document.getElementById('toc-list');
+      const tocLinks = document.querySelectorAll('.toc-link');
+      const progressBar = document.querySelector('.reading-progress-fill');
+      const progressText = document.querySelector('.reading-progress-text');
+
+      if (!toc) return;
+
+      // Mobile TOC toggle
+      if (tocToggle && tocList) {
+        tocToggle.addEventListener('click', function() {
+          const isExpanded = tocToggle.getAttribute('aria-expanded') === 'true';
+          tocToggle.setAttribute('aria-expanded', !isExpanded);
+          tocList.classList.toggle('active');
+
+          const toggleText = tocToggle.querySelector('.toc-toggle-text');
+          if (toggleText) {
+            toggleText.textContent = isExpanded ? 'Show contents' : 'Hide contents';
+          }
+        });
+      }
+
+      // Smooth scrolling for TOC links
+      tocLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+
+          if (targetElement) {
+            const headerHeight = document.querySelector('.site-header')?.offsetHeight || 0;
+            const targetPosition = targetElement.offsetTop - headerHeight - 20;
+
+            window.scrollTo({
+              top: targetPosition,
+              behavior: 'smooth'
+            });
+
+            // Update URL without triggering scroll
+            history.pushState(null, null, '#' + targetId);
+          }
+        });
+      });
+
+      // Highlight current section and update progress
+      function updateTOC() {
+        const headings = document.querySelectorAll('h2, h3');
+        const scrollPosition = window.pageYOffset;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        // Calculate reading progress
+        const progress = Math.min(100, Math.max(0, (scrollPosition / (documentHeight - windowHeight)) * 100));
+
+        if (progressBar) {
+          progressBar.style.width = progress + '%';
+          progressBar.setAttribute('aria-valuenow', Math.round(progress));
+        }
+
+        if (progressText) {
+          progressText.textContent = Math.round(progress) + '% read';
+        }
+
+        // Find current heading
+        let currentHeading = null;
+        const headerHeight = document.querySelector('.site-header')?.offsetHeight || 0;
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+          const heading = headings[i];
+          if (heading.offsetTop - headerHeight - 50 <= scrollPosition) {
+            currentHeading = heading;
+            break;
+          }
+        }
+
+        // Update active TOC link
+        tocLinks.forEach(link => {
+          link.classList.remove('active');
+          const parent = link.closest('.toc-item');
+          if (parent) {
+            parent.classList.remove('active');
+          }
+        });
+
+        if (currentHeading) {
+          const currentId = currentHeading.id || currentHeading.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+          const activeLink = document.querySelector(`.toc-link[data-heading-id="${currentId}"]`);
+
+          if (activeLink) {
+            activeLink.classList.add('active');
+            const parent = activeLink.closest('.toc-item');
+            if (parent) {
+              parent.classList.add('active');
+            }
+          }
+        }
+      }
+
+      // Throttled scroll handler
+      let ticking = false;
+      function handleScroll() {
+        if (!ticking) {
+          requestAnimationFrame(function() {
+            updateTOC();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }
+
+      // Initialize and bind events
+      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleScroll);
+      updateTOC(); // Initial call
+
+      // Make TOC sticky on desktop
+      function handleStickyTOC() {
+        if (window.innerWidth >= 1024) { // Desktop breakpoint
+          const article = document.querySelector('article.post');
+          const sidebar = document.querySelector('.post-sidebar');
+
+          if (article && sidebar && toc) {
+            const articleRect = article.getBoundingClientRect();
+            const sidebarRect = sidebar.getBoundingClientRect();
+            const headerHeight = document.querySelector('.site-header')?.offsetHeight || 0;
+
+            if (articleRect.top <= headerHeight && articleRect.bottom > sidebarRect.height + headerHeight) {
+              toc.classList.add('sticky');
+            } else {
+              toc.classList.remove('sticky');
+            }
+          }
+        }
+      }
+
+      window.addEventListener('scroll', handleStickyTOC);
+      window.addEventListener('resize', handleStickyTOC);
+      handleStickyTOC(); // Initial call
+    });
+  </script>
+{{- end }}

@@ -1,0 +1,139 @@
+{{- /* Post item partial for displaying posts in lists (home page, archives, etc.) */ -}}
+<article class="post-item h-entry" itemscope itemtype="https://schema.org/BlogPosting">
+  {{- /* Featured image */ -}}
+  {{- with .Params.featured_image }}
+    <div class="post-item-image">
+      <a href="{{ $.RelPermalink }}" class="post-item-image-link" aria-hidden="true" tabindex="-1">
+        {{- $image := resources.Get . }}
+        {{- if $image }}
+          {{- $thumbnail := $image.Resize "400x300 webp q85" }}
+          {{- $fallback := $image.Resize "400x300 jpg q85" }}
+          <picture>
+            <source srcset="{{ $thumbnail.RelPermalink }}" type="image/webp">
+            <img src="{{ $fallback.RelPermalink }}"
+                 alt="{{ $.Params.featured_image_alt | default $.Title }}"
+                 class="post-item-img"
+                 width="400"
+                 height="300"
+                 loading="lazy"
+                 decoding="async">
+          </picture>
+        {{- else }}
+          <img src="{{ . | relURL }}"
+               alt="{{ $.Params.featured_image_alt | default $.Title }}"
+               class="post-item-img"
+               width="400"
+               height="300"
+               loading="lazy"
+               decoding="async">
+        {{- end }}
+      </a>
+    </div>
+  {{- end }}
+
+  {{- /* Post content */ -}}
+  <div class="post-item-content">
+    {{- /* Post metadata */ -}}
+    <div class="post-item-meta">
+      {{- /* Categories */ -}}
+      {{- with .Params.categories }}
+        <div class="post-categories">
+          {{- range . }}
+            <a href="{{ "/categories/" | relURL }}{{ . | urlize }}/"
+               class="post-category p-category"
+               rel="tag">{{ . }}</a>
+          {{- end }}
+        </div>
+      {{- end }}
+
+      {{- /* Publication date */ -}}
+      <time class="post-date dt-published"
+            datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}"
+            itemprop="datePublished">
+        {{ .Date.Format "January 2, 2006" }}
+      </time>
+
+      {{- /* Reading time */ -}}
+      {{- with .ReadingTime }}
+        <span class="post-reading-time" aria-label="Estimated reading time">
+          {{ . }} min read
+        </span>
+      {{- end }}
+    </div>
+
+    {{- /* Post title */ -}}
+    <h2 class="post-item-title" itemprop="headline">
+      <a href="{{ .RelPermalink }}" class="post-item-title-link u-url p-name">
+        {{ .Title }}
+      </a>
+    </h2>
+
+    {{- /* Post subtitle/description */ -}}
+    {{- with .Params.subtitle }}
+      <p class="post-item-subtitle p-summary">{{ . }}</p>
+    {{- end }}
+
+    {{- /* Post excerpt */ -}}
+    <div class="post-item-excerpt p-summary" itemprop="description">
+      {{- if .Params.excerpt }}
+        {{ .Params.excerpt | markdownify | plainify | truncate 150 }}
+      {{- else if .Summary }}
+        {{ .Summary | plainify | truncate 150 }}
+      {{- else }}
+        {{ .Content | plainify | truncate 150 }}
+      {{- end }}
+    </div>
+
+    {{- /* Post footer with tags and read more */ -}}
+    <footer class="post-item-footer">
+      {{- /* Tags */ -}}
+      {{- with .Params.tags }}
+        <div class="post-tags">
+          <span class="post-tags-label" aria-label="Tags">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M20.59 13.41L13.42 20.58C13.05 20.95 12.55 21.16 12.02 21.16C11.49 21.16 10.99 20.95 10.62 20.58L2.42 12.38C2.05 12.01 1.84 11.51 1.84 10.98V4.84C1.84 3.75 2.75 2.84 3.84 2.84H9.98C10.51 2.84 11.01 3.05 11.38 3.42L19.58 11.62C20.35 12.39 20.35 13.64 19.58 14.41L20.59 13.41Z" stroke="currentColor" stroke-width="2"/>
+              <circle cx="6.84" cy="6.84" r="1" fill="currentColor"/>
+            </svg>
+          </span>
+          {{- range . }}
+            <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/"
+               class="post-tag p-category"
+               rel="tag">{{ . }}</a>
+          {{- end }}
+        </div>
+      {{- end }}
+
+      {{- /* Read more link */ -}}
+      <a href="{{ .RelPermalink }}" class="read-more-link" aria-label="Read full article: {{ .Title }}">
+        Read more
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </a>
+    </footer>
+  </div>
+
+  {{- /* Hidden microformats data */ -}}
+  <div class="h-card p-author" style="display: none;" itemprop="author" itemscope itemtype="https://schema.org/Person">
+    <span class="p-name" itemprop="name">{{ .Params.author | default .Site.Params.author }}</span>
+    {{- with .Site.Params.author_url }}
+      <a class="u-url" href="{{ . }}" itemprop="url">{{ . }}</a>
+    {{- end }}
+  </div>
+
+  {{- /* Schema.org structured data */ -}}
+  <meta itemprop="url" content="{{ .Permalink }}">
+  <meta itemprop="mainEntityOfPage" content="{{ .Permalink }}">
+  {{- with .Params.featured_image }}
+    <meta itemprop="image" content="{{ . | absURL }}">
+  {{- end }}
+
+  {{- /* Publisher information */ -}}
+  <div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+    <meta itemprop="name" content="{{ .Site.Title }}">
+    <meta itemprop="url" content="{{ .Site.BaseURL }}">
+    {{- with .Site.Params.logo }}
+      <meta itemprop="logo" content="{{ . | absURL }}">
+    {{- end }}
+  </div>
+</article>

@@ -1,0 +1,263 @@
+baseURL = "https://example.com"
+languageCode = "en-us"
+title = "Hugo Base Theme Example"
+theme = "base-theme"
+
+# Enable emoji support
+enableEmoji = true
+
+# Pagination
+[pagination]
+  pagerSize = 10
+  path = "page"
+
+# Taxonomies
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+  author = "authors"
+
+# Menu configuration
+[[menu.main]]
+  name = "Home"
+  url = "/"
+  weight = 10
+
+[[menu.main]]
+  name = "About"
+  url = "/about/"
+  weight = 20
+
+[[menu.main]]
+  name = "Posts"
+  url = "/posts/"
+  weight = 30
+
+[[menu.main]]
+  name = "Categories"
+  url = "/categories/"
+  weight = 40
+
+[[menu.main]]
+  name = "Tags"
+  url = "/tags/"
+  weight = 50
+
+[[menu.main]]
+  name = "Contact"
+  url = "/contact/"
+  weight = 60
+
+# Footer menu
+[[menu.footer]]
+  name = "Privacy Policy"
+  url = "/privacy/"
+  weight = 10
+
+[[menu.footer]]
+  name = "Terms of Service"
+  url = "/terms/"
+  weight = 20
+
+[[menu.footer]]
+  name = "RSS Feed"
+  url = "/index.xml"
+  weight = 30
+
+# Site parameters
+[params]
+  # Site description
+  description = "A comprehensive Hugo base theme demonstrating best practices for theme development with semantic HTML, accessibility features, and modern design patterns."
+
+  # Author information
+  author = "Hugo Base Theme"
+  authorBio = "A comprehensive starting point for Hugo theme development, featuring semantic HTML, accessibility best practices, and modern design patterns."
+  authorAvatar = "/images/avatar.jpg"
+  authorEmail = "hello@example.com"
+  authorWebsite = "https://example.com"
+
+  # Site logo
+  logo = ""
+  favicon = "/images/favicon.ico"
+
+  # Hero section
+  heroTitle = "Welcome to Hugo Base Theme"
+  heroSubtitle = "A comprehensive starting point for modern Hugo websites"
+  heroDescription = "This theme demonstrates best practices for Hugo development with semantic HTML5, comprehensive accessibility features, responsive design, and clean, maintainable code architecture."
+  heroImage = "/images/hero.jpg"
+  heroImageAlt = "Modern web development workspace"
+
+  # Features
+  enableSearch = true
+  enableComments = false
+  enableNewsletter = true
+  enableDarkMode = true
+  enableBackToTop = true
+  enableReadingTime = true
+  enableTableOfContents = true
+  enableSocialSharing = true
+  enableRelatedPosts = true
+
+  # SEO
+  enableOpenGraph = true
+  enableTwitterCards = true
+  enableStructuredData = true
+
+  # Performance
+  enableLazyLoading = true
+  enableImageOptimization = true
+  enableMinification = true
+
+  # Analytics (placeholder - replace with your tracking ID)
+  # googleAnalytics = "G-XXXXXXXXXX"
+
+  # Comments system (choose one)
+  # commentsSystem = "disqus"
+  # disqusShortname = "your-disqus-shortname"
+  # commentsSystem = "utterances"
+  # utterancesRepo = "username/repo"
+  # utterancesTheme = "github-light"
+
+  # Newsletter service (placeholder)
+  # newsletterService = "mailchimp"
+  # mailchimpURL = "https://your-mailchimp-url"
+
+# Social media links
+[params.social]
+  twitter = "hugoframework"
+  github = "gohugoio/hugo"
+  linkedin = "company/hugo"
+  youtube = "channel/UCx4-braeg4wOeNJBvH6VgYg"
+  facebook = "gohugoio"
+  instagram = "gohugoio"
+  mastodon = "https://fosstodon.org/@hugo"
+  email = "hello@example.com"
+  rss = true
+
+# Contact information
+[params.contact]
+  email = "hello@example.com"
+  phone = "+1 (555) 123-4567"
+  address = "123 Web Street, Internet City, IC 12345"
+
+# Organization structured data
+[params.organization]
+  name = "Hugo Base Theme"
+  url = "https://example.com"
+  logo = "https://example.com/images/logo.png"
+  description = "A comprehensive Hugo base theme for modern websites"
+
+# Markup configuration
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = "github"
+    lineNos = true
+    lineNumbersInTable = false
+    tabWidth = 2
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+    ordered = false
+
+# Output formats
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+  section = ["HTML", "RSS"]
+  taxonomy = ["HTML", "RSS"]
+  term = ["HTML", "RSS"]
+
+# Media types
+[mediaTypes]
+  [mediaTypes."application/manifest+json"]
+    suffixes = ["webmanifest"]
+
+# Output format definitions
+[outputFormats]
+  [outputFormats.RSS]
+    mediatype = "application/rss+xml"
+    baseName = "feed"
+  [outputFormats.JSON]
+    mediatype = "application/json"
+    baseName = "search"
+  [outputFormats.WebAppManifest]
+    mediaType = "application/manifest+json"
+    rel = "manifest"
+
+# Privacy configuration
+[privacy]
+  [privacy.disqus]
+    disable = true
+  [privacy.googleAnalytics]
+    disable = false
+    respectDoNotTrack = true
+    anonymizeIP = true
+  [privacy.instagram]
+    disable = false
+    simple = true
+  [privacy.x]
+    disable = false
+    enableDNT = true
+    simple = true
+  [privacy.vimeo]
+    disable = false
+    enableDNT = true
+    simple = true
+  [privacy.youtube]
+    disable = false
+    privacyEnhanced = true
+
+# Security configuration
+[security]
+  [security.exec]
+    allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$']
+  [security.funcs]
+    getenv = ['^HUGO_', '^CI$']
+
+# Related content configuration
+[related]
+  includeNewer = true
+  threshold = 80
+  toLower = false
+  [[related.indices]]
+    name = "keywords"
+    weight = 100
+  [[related.indices]]
+    name = "tags"
+    weight = 80
+  [[related.indices]]
+    name = "categories"
+    weight = 60
+  [[related.indices]]
+    name = "date"
+    weight = 10
+
+# Image processing
+[imaging]
+  resampleFilter = "CatmullRom"
+  quality = 85
+  anchor = "smart"
+
+# Caching
+[caches]
+  [caches.getjson]
+    dir = ":cacheDir/:project"
+    maxAge = "10m"
+  [caches.getcsv]
+    dir = ":cacheDir/:project"
+    maxAge = "10m"
+  [caches.images]
+    dir = ":resourceDir/_gen"
+    maxAge = "720h"
+  [caches.assets]
+    dir = ":resourceDir/_gen"
+    maxAge = "720h"
+
+# Module configuration (for Hugo Modules)
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.112.0"
