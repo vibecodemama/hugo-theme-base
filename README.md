@@ -8,6 +8,7 @@ A comprehensive, production-ready Hugo theme that serves as an excellent startin
 - **Responsive Design**: Mobile-first approach with flexible grid layouts
 - **Dark Mode Support**: Automatic detection with manual toggle option
 - **Semantic HTML5**: Proper use of semantic elements for better accessibility and SEO
+- **Microformats2**: IndieWeb compatible
 - **Modern CSS**: CSS custom properties, flexbox, and grid layouts
 - **Typography**: Carefully crafted typography scale with web fonts
 
@@ -62,13 +63,7 @@ cd my-site
 
 # Initialize git and add theme as submodule
 git init
-git submodule add https://github.com/example/hugo-base-theme.git themes/base-theme
-
-# Copy example configuration
-cp themes/base-theme/exampleSite/hugo.toml .
-
-# Start the development server
-hugo server -D
+git submodule add https://github.com/raisingpixels/hugo-base-theme.git themes/base-theme
 ```
 
 #### Option 2: Hugo Modules
@@ -77,21 +72,33 @@ hugo server -D
 hugo mod init github.com/yourusername/your-site
 
 # Add theme to your hugo.toml
-echo 'theme = ["github.com/example/hugo-base-theme"]' >> hugo.toml
+echo 'theme = ["github.com/raisingpixels/hugo-base-theme"]' >> hugo.toml
 
 # Download the theme
 hugo mod get
-
-# Start the development server
-hugo server -D
 ```
 
 #### Option 3: Download and Extract
 1. Download the latest release from GitHub
 2. Extract to `themes/base-theme/`
-3. Update your `hugo.toml` to include `theme = "base-theme"`
 
-### Basic Configuration
+### Preview the Theme
+
+After downloading the theme, ensure you have the necessary configuration before starting the development server to preview the theme.
+
+```bash
+# Copy example configuration
+cp themes/base-theme/exampleSite/hugo.toml .
+
+# Start the development server
+hugo server -D
+```
+
+## 📖 Documentation
+
+### Configuration
+
+The theme supports extensive configuration through your `hugo.toml` file. See the [example configuration](exampleSite/hugo.toml) for all available options.
 
 Update your `hugo.toml` with basic settings:
 
@@ -100,21 +107,7 @@ baseURL = "https://example.com"
 languageCode = "en-us"
 title = "My Awesome Site"
 theme = "base-theme"
-
-[params]
-  description = "My site description"
-  author = "Your Name"
-
-[params.social]
-  twitter = "yourusername"
-  github = "yourusername"
 ```
-
-## 📖 Documentation
-
-### Configuration
-
-The theme supports extensive configuration through your `hugo.toml` file. See the [example configuration](exampleSite/hugo.toml) for all available options.
 
 #### Essential Parameters
 
@@ -126,7 +119,7 @@ The theme supports extensive configuration through your `hugo.toml` file. See th
   authorBio = "Brief bio about yourself"
 
   # Branding
-  logo = "/images/logo.svg"
+  logo = "/images/logo.svg" # empty string for no logo
   favicon = "/images/favicon.ico"
 
   # Features
@@ -169,7 +162,7 @@ The theme supports extensive configuration through your `hugo.toml` file. See th
 
 ### Content Structure
 
-```
+```bash
 content/
 ├── _index.md          # Homepage content
 ├── about.md           # About page
@@ -241,7 +234,7 @@ Add custom styles by creating `assets/css/custom.css` in your site:
 
 Override any template by creating the same file structure in your site's `layouts/` directory:
 
-```
+```bash
 layouts/
 ├── _default/
 │   └── single.html    # Override single post layout
@@ -250,47 +243,53 @@ layouts/
 └── index.html         # Override homepage layout
 ```
 
+The simplest method is to copy the theme template into your `layouts` directory, then modify it.
+
+```bash
+cp themes/base-theme/layouts/index.html layouts/index.html
+```
+
 ### AI-Assisted Styling
 
 The Hugo Base Theme is designed to work seamlessly with AI coding assistants. Here are effective prompts for customizing your theme:
 
 #### Color Scheme Customization
-```
+```txt
 "Update the CSS custom properties in themes/base-theme/assets/css/main.css to use a [blue/green/purple] color scheme. Keep the existing structure but change the primary colors to create a cohesive [modern/professional/vibrant] look."
 ```
 
 #### Component Styling
-```
+```txt
 "Add CSS styles to make the post cards have a [glassmorphism/neumorphism/minimalist] design. The cards should have [subtle shadows/rounded corners/gradient backgrounds] while maintaining accessibility and the existing responsive behavior."
 ```
 
 #### Layout Modifications
-```
+```txt
 "Modify the header layout in themes/base-theme/layouts/partials/header.html to add a [search bar/social icons/call-to-action button] while keeping the existing navigation structure and mobile responsiveness."
 ```
 
 #### Typography Enhancements
-```
+```txt
 "Update the typography system to use [Google Fonts/system fonts] with a [serif/sans-serif] font stack. Ensure proper font loading performance and maintain the existing font size scale."
 ```
 
 #### Dark Mode Customization
-```
+```txt
 "Enhance the dark mode theme with [warmer/cooler] colors and add [accent colors/gradient backgrounds] while maintaining WCAG AA contrast ratios."
 ```
 
 #### Animation and Interactions
-```
+```txt
 "Add subtle CSS animations to [buttons/cards/navigation] with [fade/slide/scale] effects. Use CSS transitions and respect the prefers-reduced-motion setting for accessibility."
 ```
 
 #### Mobile Optimization
-```
+```txt
 "Improve the mobile experience by adjusting [spacing/typography/navigation] for screens under 768px. Focus on [touch targets/readability/performance] while maintaining the existing responsive grid."
 ```
 
 #### Performance Enhancements
-```
+```txt
 "Optimize the CSS by [removing unused styles/combining selectors/improving specificity] while maintaining all existing functionality and visual design."
 ```
 
@@ -299,7 +298,7 @@ The Hugo Base Theme is designed to work seamlessly with AI coding assistants. He
 - **Preserve Functionality**: Ask to maintain existing responsive behavior and accessibility features
 - **Test Thoroughly**: Always test changes across different screen sizes and themes
 - **Incremental Changes**: Make one modification at a time for easier debugging
-- **Backup First**: Keep copies of working files before major changes
+- **Backup First**: Keep copies of working files or make interim commits before major changes
 
 ## 🔧 Advanced Features
 
@@ -379,7 +378,7 @@ We welcome contributions! Here's how you can help:
 
 ```bash
 # Clone the repository
-git clone https://github.com/example/hugo-base-theme.git
+git clone https://github.com/raisingpixels/hugo-base-theme.git
 cd hugo-base-theme
 
 # Run the example site
@@ -401,17 +400,6 @@ This theme is released under the [MIT License](LICENSE). You are free to use it 
 
 - **Documentation**: Check this README and the example site
 - **Issues**: Use the GitHub issue tracker
-- **Discussions**: Join the Hugo community forums
-- **Email**: For commercial support inquiries
-
-## 🗺️ Roadmap
-
-- [ ] Additional color schemes
-- [ ] More layout options
-- [ ] Enhanced search functionality
-- [ ] Multi-language support
-- [ ] Performance optimizations
-- [ ] Additional shortcodes
 
 ---
 
